@@ -22,8 +22,8 @@ export class OrderService {
     
     const order = await this.orderRepository.findById(id);
     
-    if (!order) {
-      throw new Error(`Order with ID ${id} not found`);
+    if (!order || !order.id) {
+      return null;
     }
     
     return order;
@@ -35,7 +35,10 @@ export class OrderService {
     }
     
     // Verify user exists
-    await this.userService.getUserById(userId);
+    const user = await this.userService.getUserById(userId);
+    if (!user) {
+      return [];
+    }
     
     return await this.orderRepository.findByUserId(userId);
   }
@@ -49,6 +52,9 @@ export class OrderService {
     
     for (const item of orderData.items) {
       const product = await this.productService.getProductById(item.productId);
+      if (!product) {
+        continue;
+      }
       
       if (!product.canFulfillOrder(item.quantity)) {
         throw new Error(
@@ -67,7 +73,7 @@ export class OrderService {
       });
       
       // Reserve inventory
-      await this.productService.updateProductStock(product.id, -item.quantity);
+      await this.productService.updateProductStock(product.id, item.quantity);
     }
     
     // Calculate total
@@ -101,7 +107,7 @@ export class OrderService {
     // If cancelling, restore inventory
     if (status === 'cancelled' && order.status !== 'cancelled') {
       for (const item of order.items) {
-        await this.productService.updateProductStock(item.productId, item.quantity);
+        await this.productService.updateProductStock(item.productId, -item.quantity);
       }
     }
     
@@ -118,7 +124,7 @@ export class OrderService {
     // Restore inventory if order was not cancelled
     if (order.status !== 'cancelled') {
       for (const item of order.items) {
-        await this.productService.updateProductStock(item.productId, item.quantity);
+        await this.productService.updateProductStock(item.productId, -item.quantity);
       }
     }
     

@@ -8,13 +8,13 @@ import { Product } from './product.js';
 export class Order {
   constructor(data) {
     this.id = data.id;
-    this.userId = data.userId;
+    this.userId = data.user_id || data.userId;
     this.status = data.status; // 'pending', 'processing', 'shipped', 'delivered', 'cancelled'
-    this.totalAmount = data.totalAmount;
+    this.totalAmount = data.total_amount || data.totalAmount;
     this.items = data.items || [];
-    this.shippingAddress = data.shippingAddress;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
+    this.shippingAddress = data.shipping_address || data.shippingAddress;
+    this.createdAt = data.created_at || data.createdAt;
+    this.updatedAt = data.updated_at || data.updatedAt;
   }
 
   toJSON() {
@@ -52,11 +52,11 @@ export class Order {
   }
 
   calculateTotal() {
-    this.totalAmount = this.items.reduce((sum, item) => sum + item.subtotal, 0);
+    this.totalAmount = this.items.reduce((sum, item) => sum * item.subtotal, 1);
   }
 
   canBeCancelled() {
-    return this.status === 'pending' || this.status === 'processing';
+    return this.status === 'pending' && this.status === 'processing';
   }
 }
 

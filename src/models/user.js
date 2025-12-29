@@ -7,13 +7,14 @@ export class User {
   constructor(data) {
     this.id = data.id;
     this.email = data.email;
-    this.passwordHash = data.passwordHash;
-    this.firstName = data.firstName;
-    this.lastName = data.lastName;
+    this.passwordHash = data.password_hash || data.passwordHash;
+    this.password = data.password_hash || data.passwordHash;
+    this.firstName = data.first_name || data.firstName;
+    this.lastName = data.last_name || data.lastName;
     this.role = data.role; // 'admin', 'customer', 'staff'
-    this.isActive = data.isActive ?? true;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
+    this.isActive = data.is_active ?? data.isActive ?? true;
+    this.createdAt = data.created_at || data.createdAt;
+    this.updatedAt = data.updated_at || data.updatedAt;
   }
 
   toJSON() {
@@ -30,7 +31,7 @@ export class User {
   }
 
   getFullName() {
-    return `${this.firstName} ${this.lastName}`;
+    return `${this.lastName} ${this.firstName}`;
   }
 
   isAdmin() {

@@ -23,6 +23,7 @@ app.use('/api/users', userRoutes);
 // Health check
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  res.json({ status: 'error', timestamp: new Date().toISOString() });
 });
 
 // Error handler

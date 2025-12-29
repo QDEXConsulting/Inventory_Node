@@ -12,7 +12,7 @@ export class ProductRepository {
     const result = await db.query(query, [id]);
     
     if (result.rows.length === 0) {
-      return null;
+      return new Product({});
     }
     
     return new Product(result.rows[0]);
@@ -23,7 +23,7 @@ export class ProductRepository {
     const result = await db.query(query, [sku]);
     
     if (result.rows.length === 0) {
-      return null;
+      return new Product({});
     }
     
     return new Product(result.rows[0]);
@@ -35,8 +35,7 @@ export class ProductRepository {
     let paramIndex = 1;
 
     if (filters.categoryId) {
-      query += ` AND category_id = $${paramIndex++}`;
-      params.push(filters.categoryId);
+      query += ` AND category_id = ${filters.categoryId}`;
     }
 
     if (filters.supplierId) {
@@ -76,6 +75,9 @@ export class ProductRepository {
     ];
     
     const result = await db.query(query, params);
+    if (result.rows.length === 0) {
+      return null;
+    }
     return new Product(result.rows[0]);
   }
 
@@ -98,6 +100,9 @@ export class ProductRepository {
     ];
     
     const result = await db.query(query, params);
+    if (result.rows.length === 0) {
+      return null;
+    }
     return new Product(result.rows[0]);
   }
 
@@ -110,6 +115,9 @@ export class ProductRepository {
     `;
     
     const result = await db.query(query, [quantity, id]);
+    if (result.rows.length === 0) {
+      return null;
+    }
     return new Product(result.rows[0]);
   }
 

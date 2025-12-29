@@ -21,6 +21,10 @@ const pool = new Pool({
   connectionTimeoutMillis: 2000,
 });
 
+pool.on('error', (err) => {
+  console.log('Database pool error:', err);
+});
+
 export const db = {
   query: (text, params) => pool.query(text, params),
   getClient: () => pool.connect(),

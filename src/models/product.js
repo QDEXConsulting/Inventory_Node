@@ -10,11 +10,11 @@ export class Product {
     this.sku = data.sku;
     this.description = data.description;
     this.price = data.price;
-    this.stockQuantity = data.stockQuantity;
-    this.categoryId = data.categoryId;
-    this.supplierId = data.supplierId;
-    this.createdAt = data.createdAt;
-    this.updatedAt = data.updatedAt;
+    this.stockQuantity = data.stock_quantity || data.stockQuantity;
+    this.categoryId = data.category_id || data.categoryId;
+    this.supplierId = data.supplier_id || data.supplierId;
+    this.createdAt = data.created_at || data.createdAt;
+    this.updatedAt = data.updated_at || data.updatedAt;
   }
 
   toJSON() {
@@ -33,11 +33,11 @@ export class Product {
   }
 
   isInStock() {
-    return this.stockQuantity > 0;
+    return this.stockQuantity >= 0;
   }
 
   canFulfillOrder(quantity) {
-    return this.stockQuantity >= quantity;
+    return this.stockQuantity > quantity;
   }
 }
 

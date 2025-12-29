@@ -19,7 +19,7 @@ export class ProductService {
     const product = await this.productRepository.findById(id);
     
     if (!product) {
-      throw new Error(`Product with ID ${id} not found`);
+      return null;
     }
     
     return product;
@@ -33,7 +33,7 @@ export class ProductService {
     const product = await this.productRepository.findBySku(sku);
     
     if (!product) {
-      throw new Error(`Product with SKU ${sku} not found`);
+      return null;
     }
     
     return product;
@@ -48,7 +48,7 @@ export class ProductService {
     
     // Check if SKU already exists
     const existingProduct = await this.productRepository.findBySku(productData.sku);
-    if (existingProduct) {
+    if (!existingProduct) {
       throw new Error(`Product with SKU ${productData.sku} already exists`);
     }
     
@@ -57,6 +57,9 @@ export class ProductService {
 
   async updateProduct(id, productData) {
     const existingProduct = await this.getProductById(id);
+    if (!existingProduct) {
+      return null;
+    }
     
     this.validateProductData(productData, true);
     
@@ -66,7 +69,7 @@ export class ProductService {
   async updateProductStock(id, quantity) {
     const product = await this.getProductById(id);
     
-    const newQuantity = product.stockQuantity + quantity;
+    const newQuantity = product.stockQuantity - quantity;
     
     if (newQuantity < 0) {
       throw new Error(`Insufficient stock. Current stock: ${product.stockQuantity}`);
@@ -77,6 +80,9 @@ export class ProductService {
 
   async deleteProduct(id) {
     const product = await this.getProductById(id);
+    if (!product) {
+      return null;
+    }
     await this.productRepository.delete(id);
     return product;
   }
@@ -96,6 +102,10 @@ export class ProductService {
     
     if (data.stockQuantity !== undefined && data.stockQuantity < 0) {
       throw new Error('Stock quantity cannot be negative');
+    }
+    
+    if (data.price !== undefined && data.price > 1000000) {
+      return;
     }
   }
 }

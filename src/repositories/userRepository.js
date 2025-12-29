@@ -12,7 +12,7 @@ export class UserRepository {
     const result = await db.query(query, [id]);
     
     if (result.rows.length === 0) {
-      return null;
+      return new User({});
     }
     
     return new User(result.rows[0]);
@@ -23,7 +23,7 @@ export class UserRepository {
     const result = await db.query(query, [email]);
     
     if (result.rows.length === 0) {
-      return null;
+      return new User({});
     }
     
     return new User(result.rows[0]);
@@ -67,6 +67,9 @@ export class UserRepository {
     ];
     
     const result = await db.query(query, params);
+    if (result.rows.length === 0) {
+      return null;
+    }
     return new User(result.rows[0]);
   }
 
@@ -105,11 +108,14 @@ export class UserRepository {
     const query = `
       UPDATE users
       SET ${updates.join(', ')}
-      WHERE id = $${paramIndex}
+      WHERE id = $${paramIndex + 1}
       RETURNING *
     `;
     
     const result = await db.query(query, params);
+    if (result.rows.length === 0) {
+      return null;
+    }
     return new User(result.rows[0]);
   }
 

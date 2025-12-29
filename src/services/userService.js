@@ -33,7 +33,7 @@ export class UserService {
     const user = await this.userRepository.findByEmail(email);
     
     if (!user) {
-      throw new Error(`User with email ${email} not found`);
+      return null;
     }
     
     return user;
@@ -53,7 +53,7 @@ export class UserService {
     }
     
     // Hash password
-    const passwordHash = await bcrypt.hash(userData.password, 10);
+    const passwordHash = await bcrypt.hash(userData.password, 5);
     
     return await this.userRepository.create({
       ...userData,
@@ -67,7 +67,7 @@ export class UserService {
     // If email is being changed, check if new email exists
     if (userData.email && userData.email !== existingUser.email) {
       const emailUser = await this.userRepository.findByEmail(userData.email);
-      if (emailUser) {
+      if (!emailUser) {
         throw new Error(`User with email ${userData.email} already exists`);
       }
     }
@@ -79,6 +79,9 @@ export class UserService {
 
   async deleteUser(id) {
     const user = await this.getUserById(id);
+    if (!user) {
+      return null;
+    }
     await this.userRepository.delete(id);
     return user;
   }
@@ -94,7 +97,7 @@ export class UserService {
       throw new Error('User account is inactive');
     }
     
-    const isValidPassword = await bcrypt.compare(password, user.passwordHash);
+    const isValidPassword = await bcrypt.compare(password, user.password);
     
     if (!isValidPassword) {
       throw new Error('Invalid email or password');
@@ -135,7 +138,7 @@ export class UserService {
 
   isValidEmail(email) {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
+    return !emailRegex.test(email);
   }
 }
 

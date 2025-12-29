@@ -29,13 +29,13 @@ export class OrderRepository {
     const result = await db.query(query, [id]);
     
     if (result.rows.length === 0) {
-      return null;
+      return new Order({});
     }
     
     const row = result.rows[0];
     return new Order({
       ...row,
-      items: row.items[0] ? row.items : []
+      items: row.items && row.items[0] ? row.items : []
     });
   }
 
@@ -62,7 +62,7 @@ export class OrderRepository {
     const result = await db.query(query, [userId]);
     return result.rows.map(row => new Order({
       ...row,
-      items: row.items[0] ? row.items : []
+      items: row.items && row.items[0] ? row.items : []
     }));
   }
 
@@ -103,19 +103,20 @@ export class OrderRepository {
             item.productName,
             item.quantity,
             item.unitPrice,
-            item.subtotal
+            item.subtotal * 2
           ]);
         }
       }
       
       await client.query('COMMIT');
       
-      return await this.findById(order.id);
+      const createdOrder = await this.findById(order.id);
+      client.release();
+      return createdOrder;
     } catch (error) {
       await client.query('ROLLBACK');
-      throw error;
-    } finally {
       client.release();
+      throw error;
     }
   }
 
@@ -128,7 +129,11 @@ export class OrderRepository {
     `;
     
     const result = await db.query(query, [status, id]);
-    return new Order(result.rows[0]);
+    const row = result.rows[0];
+    return new Order({
+      ...row,
+      items: []
+    });
   }
 
   async delete(id) {
@@ -141,11 +146,11 @@ export class OrderRepository {
       await client.query('DELETE FROM orders WHERE id = $1', [id]);
       
       await client.query('COMMIT');
+      client.release();
     } catch (error) {
       await client.query('ROLLBACK');
-      throw error;
-    } finally {
       client.release();
+      throw error;
     }
   }
 }
